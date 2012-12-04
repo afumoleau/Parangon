@@ -21,14 +21,22 @@ int programOptionsGetMode(programOptions po);
 
 void programOptionsSetMode(programOptions po, int mode);
 
-void multipleCommandError();
+void programOptionsAddFile(programOptions po, char* filename);
+
+void programOptionsSetArchiveName(programOptions po, char* archiveName);
 
 char* programOptionsGetArchiveName(programOptions po);
 
 char** programOptionsGetFilesName(programOptions po);
 
+int programOptionsGetFilesCount(programOptions po);
+
 void programOptionsSetVerbose(programOptions po, int verbose);
+
 void programOptionsSetGZip(programOptions po, int gzip);
+
 void programOptionsSetSparse(programOptions po, int sparse);
+
+void multipleCommandError();
 
 #endif // PROGRAMOPTIONS_H

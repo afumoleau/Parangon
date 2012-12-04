@@ -7,7 +7,8 @@ struct programOptions
 	int verbose;
 	int mode;
 	char* archiveFilename;
-	char** filesName;
+	char** filesNames;
+	int filesCount;
 	int gzip;
 	int sparse;
 };
@@ -18,6 +19,8 @@ programOptions programOptionsCreate()
 	instance->mode = MODE_NONE;
 	instance->verbose = 0;
 	instance->archiveFilename = NULL;
+	instance->filesNames = NULL;
+	instance->filesCount = 0;
 	instance->gzip = 0;
 	instance->sparse = 0;
 	return instance;
@@ -40,10 +43,23 @@ void programOptionsSetMode(programOptions po, int mode)
 	po->mode = mode;
 }
 
-void multipleCommandError()
+void programOptionsAddFile(programOptions po, char* filename)
 {
-	fprintf(stderr, "Multiple commands found\n");
-	exit(EXIT_FAILURE);
+	printf("Adding file %s\n", filename);
+
+	++po->filesCount;
+	char** tmp = (char**) malloc(sizeof(char*) * po->filesCount);
+
+	for(int i = 0; i < po->filesCount-1; ++i)
+		tmp[i] = po->filesNames[i];
+	tmp[po->filesCount-1] = filename;
+
+	po->filesNames = tmp;
+}
+
+void programOptionsSetArchiveName(programOptions po, char* archiveName)
+{
+	po->archiveFilename = archiveName;
 }
 
 char* programOptionsGetArchiveName(programOptions po)
@@ -58,7 +74,12 @@ char* programOptionsGetArchiveName(programOptions po)
 
 char** programOptionsGetFilesName(programOptions po)
 {
-	return po->filesName;
+	return po->filesNames;
+}
+
+int programOptionsGetFilesCount(programOptions po)
+{
+	return po->filesCount;
 }
 
 void programOptionsSetVerbose(programOptions po, int verbose)
@@ -74,4 +95,10 @@ void programOptionsSetGZip(programOptions po, int gzip)
 void programOptionsSetSparse(programOptions po, int sparse)
 {
 	po->sparse = sparse;
+}
+
+void multipleCommandError()
+{
+	fprintf(stderr, "Multiple commands found\n");
+	exit(EXIT_FAILURE);
 }
