@@ -20,3 +20,5 @@
 .cproject
 .project
 .settings
+Debug/
+Release/
