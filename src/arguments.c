@@ -1,6 +1,8 @@
 #include "arguments.h"
+#include <string.h>
+#include <stdio.h>
 
-int readParam(int argc, char* argv[], programOptions po)
+int readArgument(int argc, char* argv[], programOptions po)
 {
 	static int argumentIndex = 1;
 
@@ -10,86 +12,90 @@ int readParam(int argc, char* argv[], programOptions po)
 	char* argument = argv[argumentIndex];
 
 	int j = 0;
-	if (argument[j++] != '-')
-		return 1;
-
-	do
+	if (argument[j] == '-')
 	{
-		char option = argument[j++];
-
-		switch (option)
+		j++;
+		do
 		{
-		case 'h':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_HELP);
-			break;
+			char option = argument[j++];
 
-		case 'v':
-			programOptionsSetVerbose(po, 1);
-			break;
+			switch (option)
+			{
+			case 'h':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_HELP);
+				break;
 
-		case 'c':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_CREATE);
-			break;
+			case 'v':
+				programOptionsSetVerbose(po, 1);
+				break;
 
-		case 't':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_LIST);
-			break;
+			case 'c':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_CREATE);
+				break;
 
-		case 'r':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_ADD);
-			break;
+			case 't':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_LIST);
+				break;
 
-		case 'u':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_UPDATE);
-			break;
+			case 'r':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_ADD);
+				break;
 
-		case 'x':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_EXTRACT);
-			break;
+			case 'u':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_UPDATE);
+				break;
 
-		case 'f':
-			//TODO Implement command
-			printf("f\n");
-			break;
+			case 'x':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_EXTRACT);
+				break;
 
-		case 'z':
-			programOptionsSetGZip(po, 1);
-			break;
+			case 'f':
+				programOptionsSetArchiveName(po, argv[++argumentIndex]);
+				break;
 
-		case 'd':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_DELETE);
-			break;
+			case 'z':
+				programOptionsSetGZip(po, 1);
+				break;
 
-		case 'm':
-			if(programOptionsGetMode(po) != MODE_NONE)
-				multipleCommandError();
-			programOptionsSetMode(po, MODE_DIFF);
-			break;
+			case 'd':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_DELETE);
+				break;
 
-		case 's':
-			if (strcmp(argument, "-sparse"))
-				programOptionsSetSparse(po, 1);
-			break;
+			case 'm':
+				if(programOptionsGetMode(po) != MODE_NONE)
+					multipleCommandError();
+				programOptionsSetMode(po, MODE_DIFF);
+				break;
 
-		default:
-			break;
-		}
+			case 's':
+				if (strcmp(argument, "-sparse"))
+					programOptionsSetSparse(po, 1);
+				break;
 
-	} while (argument[j] != '\0');
+			default:
+				break;
+			}
+
+		} while (argument[j] != '\0');
+	}
+	else
+	{
+		programOptionsAddFile(po, argument);
+	}
 
 	return (++argumentIndex < argc) ? 0 : argc;
 }

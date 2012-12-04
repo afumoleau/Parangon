@@ -3,6 +3,6 @@
 
 #include "programOptions.h"
 
-int readParam(int argc, char* argv[], programOptions po);
+int readArgument(int argc, char* argv[], programOptions po);
 
 #endif // ARGUMENTS_H

@@ -2,6 +2,10 @@
 #include "programOptions.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
 
 int executeCommand(programOptions po)
 {
@@ -53,19 +57,47 @@ int commandUpdate(programOptions po)
 {
 	return 0;
 }
+
+struct tarHeader
+{
+	char name[100];
+	mode_t mode;
+	unsigned long owner;
+	unsigned long group;
+	off_t size;
+	time_t mtime;
+	unsigned long checksum;
+	char type;
+	char linkedName[100];
+};
+typedef struct tarHeader tarHeader;
+
 int commandCreate(programOptions po)
 {
 	char* archiveFilename = programOptionsGetArchiveName(po);
-	if(archiveFilename == NULL)
-	{
-		archiveFilename = (char*) malloc(100*sizeof(char));
-		scanf("%s", archiveFilename);
-	}
-
 	FILE* archiveFile = fopen(archiveFilename, "w");
 
+	printf("Creating %s\n", archiveFilename);
 
-	//TODO
+	char** files = programOptionsGetFilesName(po);
+	for(int i = 0; i < programOptionsGetFilesCount(po); ++i)
+	{
+		struct stat myStat;
+		stat(files[i], &myStat);
+
+		tarHeader header;
+		strcpy(header.name, files[i]);
+		header.mode = myStat.st_mode;
+		header.owner = myStat.st_gid;
+		header.group = myStat.st_uid;
+		header.size = myStat.st_size;
+		header.mtime = myStat.st_mtime;
+		/*
+		header.checksum = ;
+		header.type = ;
+		header.linkedName = ;
+		*/
+	}
 	//fwrite(archiveFile, headers);
 
 	fclose(archiveFile);
