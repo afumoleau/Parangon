@@ -432,5 +432,22 @@ int commandDiff(programOptions po)
 
 int commandHelp(programOptions po)
 {
+	printf("Usage: \npar <operation> [options]\n");
+	printf("\n");
+	printf("Operations :\n");
+	printf("-h \t display the help\n\n");	
+	printf("-t \t list the contents from an archive\n\n");	
+	printf("-r <files | directories> \t append files (or directories) to the end of an archive\n\n");	
+	printf("-c <files | directories> \t create an archive from files (and directories)\n\n");	
+	printf("-u \t only append files that are newer than the existing in archive\n\n");	
+	printf("-x \t extract files from an archive\n\n");	
+	printf("-d <file> \t delete file from the archive (not for use on magnetic tapes !)\n\n");	
+	printf("-sparse \t \n\n");	
+	printf("-m \t find differences between archive and file system\n");
+	printf("\n");	
+	printf("Options :\n");	
+	printf("-f <file> \t use archive file\n\n");
+	printf("-v \t verbosely list files processed\n\n");
+	printf("-z \t filter the archive through gzip\n\n");
 	return 0;
 }
