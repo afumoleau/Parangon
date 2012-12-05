@@ -115,8 +115,8 @@ int commandAdd(programOptions po)
 		fileHeader header;
 		strcpy(header.name, file);
 		header.mode = myStat.st_mode;
-		header.owner = myStat.st_gid;
-		header.group = myStat.st_uid;
+		header.group = myStat.st_gid;
+		header.owner = myStat.st_uid;
 		header.size = myStat.st_size;
 		header.data = dataOffset;
 		header.mtime = myStat.st_mtime;
@@ -276,19 +276,19 @@ int commandExtract(programOptions po)
 				fread(&buffer,dataSize,1,archiveFile);
 				fseek(archiveFile, headerPos, SEEK_SET);
 
-				int svguid = geteuid() ;
+				/*int svguid = geteuid() ;
 				seteuid(header.owner);
 
 				int svggid = getegid();
-				setegid(header.group);
+				setegid(header.group);*/
 
 				FILE* newFile = fopen(header.name, "w+");
 				fseek(newFile,0,SEEK_SET);
 				fwrite(&buffer,dataSize,1,newFile);
 				chmod(header.name, header.mode);
 
-				seteuid(svguid);
-				setegid(svggid);
+				/*seteuid(svguid);
+				setegid(svggid);*/
 
 				//TO DO change date of last modification.
 
@@ -340,8 +340,8 @@ int commandCreate(programOptions po)
 		fileHeader header;
 		strcpy(header.name, files[i]);
 		header.mode = myStat.st_mode;
-		header.owner = myStat.st_gid;
-		header.group = myStat.st_uid;
+		header.group = myStat.st_gid;
+		header.owner = myStat.st_uid;
 		header.size = myStat.st_size;
 		header.data = dataOffset;
 		header.mtime = myStat.st_mtime;
