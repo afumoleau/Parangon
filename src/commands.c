@@ -6,8 +6,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+
 #include "programOptions.h"
 #include "fileHeader.h"
+#include "fileOperations.h"
 
 #define COPYBUFFERSIZE 1024
 
@@ -92,9 +94,11 @@ int commandAdd(programOptions po)
 		if(programOptionsGetVerbose(po))
 			printf("Adding file %s to archive %s\n", file, archiveFilename);
 
+		printf("coucou1");
 		// Get file data
 		struct stat myStat;
 		stat(file, &myStat);
+		printf("coucou2");
 
 		// Create header and fill it with data
 		fileHeader header;
@@ -150,6 +154,68 @@ int commandAdd(programOptions po)
 
 int commandDelete(programOptions po)
 {
+	// Open archive file
+	char* archiveFilename = programOptionsGetArchiveName(po);
+	FILE* archiveFile = fopen(archiveFilename, "r+");
+
+	// Check file existence
+	if(archiveFile == NULL)
+	{
+		fprintf(stderr, "No such file or directory : %s\n", archiveFilename);
+		return 1;
+	}
+
+	// Get file counts
+	char** oldFiles = programOptionsGetFilesName(po);
+	unsigned int oldFilesCount = programOptionsGetFilesCount(po);
+	unsigned int fileCount = 0;
+	fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+	unsigned int totalFileCount = fileCount;
+
+	for(int i = 0; i < oldFilesCount; i++)
+	{
+		for(int j = 0; j < fileCount; j++)
+		{
+			size_t headerPos = ftell(archiveFile);
+			fileHeader header ;
+			fread(&header, sizeof(fileHeader), 1, archiveFile);
+
+			if(strcmp(header.name,oldFiles[i]) == 0)
+			{
+				size_t dataOffset = header.data;
+				size_t dataSize = header.size;
+
+				// Shift data to erase the file and its header
+				shiftData(archiveFile, dataOffset + dataSize, dataOffset);
+				shiftData(archiveFile, ftell(archiveFile), headerPos);
+				fseek(archiveFile, headerPos, SEEK_SET);
+
+				// Update data offset for each header
+				fileHeader header;
+				for(int k = j+1; k < fileCount; k++)
+				{
+					fread(&header, sizeof(fileHeader), 1, archiveFile);
+					header.data -= dataSize ;
+					fseek(archiveFile, -sizeof(fileHeader), SEEK_CUR);
+					fwrite(&header, sizeof(fileHeader), 1, archiveFile);
+				}
+
+
+				totalFileCount--;
+				break ;
+			}
+		}
+	}
+
+	// Update file count
+	fseek(archiveFile, 0, SEEK_SET);
+	fwrite(&totalFileCount, sizeof(unsigned int), 1, archiveFile);
+
+	// Close archive file
+	fclose(archiveFile);
+	return 0;
+
 	return 0;
 }
 
