@@ -73,8 +73,9 @@ int commandAdd(programOptions po)
 	fseek(archiveFile, 0, SEEK_SET);
 
 	// Update data offset for each header
-	size_t dataOffset = totalFileCount * sizeof(fileHeader);
+	size_t dataOffset = sizeof(unsigned int) + totalFileCount * sizeof(fileHeader);
 	fileHeader header;
+	fseek(archiveFile, sizeof(unsigned int), SEEK_SET);
 	for(int i = 0; i < fileCount; ++i)
 	{
 		fread(&header, sizeof(fileHeader), 1, archiveFile);
