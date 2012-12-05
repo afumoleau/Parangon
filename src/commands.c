@@ -237,6 +237,70 @@ int commandDelete(programOptions po)
 
 int commandExtract(programOptions po)
 {
+	// Open archive file
+	char* archiveFilename = programOptionsGetArchiveName(po);
+	FILE* archiveFile = fopen(archiveFilename, "r+");
+
+	// Check file existence
+	if(archiveFile == NULL)
+	{
+		fprintf(stderr, "No such file or directory : %s\n", archiveFilename);
+		return 1;
+	}
+
+	// Get file counts
+	char** extractFiles = programOptionsGetFilesName(po);
+	unsigned int extractFilesCount = programOptionsGetFilesCount(po);
+	unsigned int fileCount = 0;
+	fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+	for(int i = 0; i < extractFilesCount; i++)
+	{
+		// Verbose Log
+		if(programOptionsGetVerbose(po))
+			printf("Extracting file %s to archive %s\n", extractFiles[i], archiveFilename);
+
+		for(int j = 0; j < fileCount; j++)
+		{
+			fileHeader header ;
+			fread(&header, sizeof(fileHeader), 1, archiveFile);
+			size_t headerPos = ftell(archiveFile);
+
+			if(strcmp(header.name,extractFiles[i]) == 0)
+			{
+				size_t dataOffset = header.data;
+				size_t dataSize = header.size;
+				char buffer[dataSize];
+
+				fseek(archiveFile, dataOffset, SEEK_SET);
+				fread(&buffer,dataSize,1,archiveFile);
+				fseek(archiveFile, headerPos, SEEK_SET);
+
+				int svguid = geteuid() ;
+				seteuid(header.owner);
+
+				int svggid = getegid();
+				setegid(header.group);
+
+				FILE* newFile = fopen(header.name, "w+");
+				fseek(newFile,0,SEEK_SET);
+				fwrite(&buffer,dataSize,1,newFile);
+				chmod(header.name, header.mode);
+
+				seteuid(svguid);
+				setegid(svggid);
+
+				//TO DO change date of last modification.
+
+				fclose(newFile);
+
+				break ;
+			}
+		}
+	}
+
+	// Close archive file
+	fclose(archiveFile);
 	return 0;
 }
 
