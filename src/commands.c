@@ -276,19 +276,19 @@ int commandExtract(programOptions po)
 				fread(&buffer,dataSize,1,archiveFile);
 				fseek(archiveFile, headerPos, SEEK_SET);
 
-				/*int svguid = geteuid() ;
+				int svguid = geteuid() ;
 				seteuid(header.owner);
 
 				int svggid = getegid();
-				setegid(header.group);*/
+				setegid(header.group);
 
 				FILE* newFile = fopen(header.name, "w+");
 				fseek(newFile,0,SEEK_SET);
 				fwrite(&buffer,dataSize,1,newFile);
 				chmod(header.name, header.mode);
 
-				/*seteuid(svguid);
-				setegid(svggid);*/
+				seteuid(svguid);
+				setegid(svggid);
 
 				//TO DO change date of last modification.
 
@@ -427,7 +427,48 @@ int commandList(programOptions po)
 
 int commandDiff(programOptions po)
 {
-	return 0;
+	// Open archive file
+		char* archiveFilename = programOptionsGetArchiveName(po);
+		FILE* archiveFile = fopen(archiveFilename, "r");
+
+		// Check file existence
+		if(archiveFile == NULL)
+		{
+			fprintf(stderr, "No such file or directory : %s\n", archiveFilename);
+			return 1;
+		}
+
+		// Verbose Log
+		if(programOptionsGetVerbose(po))
+			printf("Serching differences between the files in %s and the files on the disk.\n", archiveFilename);
+
+		// Read file count
+		unsigned int fileCount = 0;
+		fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+		// Read headers
+		fileHeader header;
+		for(int i = 0; i < fileCount; ++i)
+		{
+			size_t readSize = fread(&header, sizeof(fileHeader), 1, archiveFile);
+			if(readSize > 0)
+			{
+				struct stat buf ;
+				stat(header.name,&buf);
+				if(header.mtime != buf.st_mtime)
+					printf("%s is different on the disk.\n", header.name);
+			}
+			else
+			{
+				// Close archive file
+				fclose(archiveFile);
+				return 1;
+			}
+		}
+
+		// Close archive file
+		fclose(archiveFile);
+		return 0;
 }
 
 int commandHelp(programOptions po)
