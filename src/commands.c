@@ -67,8 +67,9 @@ int commandAdd(programOptions po)
 	fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
 	unsigned int totalFileCount = fileCount + newFilesCount;
 
+	if( fileCount != 0 )
 	// Shift data to reserve some place for the new headers
-	shiftData(archiveFile, sizeof(unsigned int) + fileCount * sizeof(fileHeader), sizeof(unsigned int) + totalFileCount * sizeof(fileHeader));
+		shiftData(archiveFile, sizeof(unsigned int) + fileCount * sizeof(fileHeader), sizeof(unsigned int) + totalFileCount * sizeof(fileHeader));
 	fseek(archiveFile, 0, SEEK_SET);
 
 	// Update data offset for each header
@@ -117,6 +118,7 @@ int commandAdd(programOptions po)
 
 	// Write new files data
 	fseek(archiveFile, newFilesDataOffset, SEEK_SET);
+
 	for(int i = 0; i < newFilesCount; ++i)
 	{
 		// Open file

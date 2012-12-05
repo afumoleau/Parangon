@@ -28,8 +28,6 @@ programOptions programOptionsCreate()
 
 void programOptionsDestroy(programOptions po)
 {
-	if(po->archiveFilename != NULL)
-		free(po->archiveFilename);
 	free(po);
 }
 
