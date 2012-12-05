@@ -115,8 +115,8 @@ int commandAdd(programOptions po)
 		fileHeader header;
 		strcpy(header.name, file);
 		header.mode = myStat.st_mode;
-		header.owner = myStat.st_gid;
-		header.group = myStat.st_uid;
+		header.group = myStat.st_gid;
+		header.owner = myStat.st_uid;
 		header.size = myStat.st_size;
 		header.data = dataOffset;
 		header.mtime = myStat.st_mtime;
@@ -237,6 +237,70 @@ int commandDelete(programOptions po)
 
 int commandExtract(programOptions po)
 {
+	// Open archive file
+	char* archiveFilename = programOptionsGetArchiveName(po);
+	FILE* archiveFile = fopen(archiveFilename, "r+");
+
+	// Check file existence
+	if(archiveFile == NULL)
+	{
+		fprintf(stderr, "No such file or directory : %s\n", archiveFilename);
+		return 1;
+	}
+
+	// Get file counts
+	char** extractFiles = programOptionsGetFilesName(po);
+	unsigned int extractFilesCount = programOptionsGetFilesCount(po);
+	unsigned int fileCount = 0;
+	fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+	for(int i = 0; i < extractFilesCount; i++)
+	{
+		// Verbose Log
+		if(programOptionsGetVerbose(po))
+			printf("Extracting file %s to archive %s\n", extractFiles[i], archiveFilename);
+
+		for(int j = 0; j < fileCount; j++)
+		{
+			fileHeader header ;
+			fread(&header, sizeof(fileHeader), 1, archiveFile);
+			size_t headerPos = ftell(archiveFile);
+
+			if(strcmp(header.name,extractFiles[i]) == 0)
+			{
+				size_t dataOffset = header.data;
+				size_t dataSize = header.size;
+				char buffer[dataSize];
+
+				fseek(archiveFile, dataOffset, SEEK_SET);
+				fread(&buffer,dataSize,1,archiveFile);
+				fseek(archiveFile, headerPos, SEEK_SET);
+
+				int svguid = geteuid() ;
+				seteuid(header.owner);
+
+				int svggid = getegid();
+				setegid(header.group);
+
+				FILE* newFile = fopen(header.name, "w+");
+				fseek(newFile,0,SEEK_SET);
+				fwrite(&buffer,dataSize,1,newFile);
+				chmod(header.name, header.mode);
+
+				seteuid(svguid);
+				setegid(svggid);
+
+				//TO DO change date of last modification.
+
+				fclose(newFile);
+
+				break ;
+			}
+		}
+	}
+
+	// Close archive file
+	fclose(archiveFile);
 	return 0;
 }
 
@@ -276,8 +340,8 @@ int commandCreate(programOptions po)
 		fileHeader header;
 		strcpy(header.name, files[i]);
 		header.mode = myStat.st_mode;
-		header.owner = myStat.st_gid;
-		header.group = myStat.st_uid;
+		header.group = myStat.st_gid;
+		header.owner = myStat.st_uid;
 		header.size = myStat.st_size;
 		header.data = dataOffset;
 		header.mtime = myStat.st_mtime;
@@ -363,10 +427,68 @@ int commandList(programOptions po)
 
 int commandDiff(programOptions po)
 {
-	return 0;
+	// Open archive file
+		char* archiveFilename = programOptionsGetArchiveName(po);
+		FILE* archiveFile = fopen(archiveFilename, "r");
+
+		// Check file existence
+		if(archiveFile == NULL)
+		{
+			fprintf(stderr, "No such file or directory : %s\n", archiveFilename);
+			return 1;
+		}
+
+		// Verbose Log
+		if(programOptionsGetVerbose(po))
+			printf("Serching differences between the files in %s and the files on the disk.\n", archiveFilename);
+
+		// Read file count
+		unsigned int fileCount = 0;
+		fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+		// Read headers
+		fileHeader header;
+		for(int i = 0; i < fileCount; ++i)
+		{
+			size_t readSize = fread(&header, sizeof(fileHeader), 1, archiveFile);
+			if(readSize > 0)
+			{
+				struct stat buf ;
+				stat(header.name,&buf);
+				if(header.mtime != buf.st_mtime)
+					printf("%s is different on the disk.\n", header.name);
+			}
+			else
+			{
+				// Close archive file
+				fclose(archiveFile);
+				return 1;
+			}
+		}
+
+		// Close archive file
+		fclose(archiveFile);
+		return 0;
 }
 
 int commandHelp(programOptions po)
 {
+	printf("Usage: \npar <operation> [options]\n");
+	printf("\n");
+	printf("Operations :\n");
+	printf("-h \t display the help\n\n");	
+	printf("-t \t list the contents from an archive\n\n");	
+	printf("-r <files | directories> \t append files (or directories) to the end of an archive\n\n");	
+	printf("-c <files | directories> \t create an archive from files (and directories)\n\n");	
+	printf("-u \t only append files that are newer than the existing in archive\n\n");	
+	printf("-x \t extract files from an archive\n\n");	
+	printf("-d <file> \t delete file from the archive (not for use on magnetic tapes !)\n\n");	
+	printf("-sparse \t \n\n");	
+	printf("-m \t find differences between archive and file system\n");
+	printf("\n");	
+	printf("Options :\n");	
+	printf("-f <file> \t use archive file\n\n");
+	printf("-v \t verbosely list files processed\n\n");
+	printf("-z \t filter the archive through gzip\n\n");
 	return 0;
 }
