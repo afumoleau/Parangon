@@ -74,15 +74,26 @@ int commandAdd(programOptions po)
 
 	// Update data offset for each header
 	size_t dataOffset = sizeof(unsigned int) + totalFileCount * sizeof(fileHeader);
-	fileHeader header;
 	fseek(archiveFile, sizeof(unsigned int), SEEK_SET);
 	for(int i = 0; i < fileCount; ++i)
 	{
-		fread(&header, sizeof(fileHeader), 1, archiveFile);
+		fileHeader header;
+		printf("reading at %d\n", ftell(archiveFile));
+		if(fread(&header, sizeof(fileHeader), 1, archiveFile) <= 0)
+			fprintf(stderr, "Error reading");
+
 		header.data = dataOffset;
 		dataOffset += header.size;
+
+		printf("Updating %s\n", header.name);
+
+		printf("seeking at %d\n", ftell(archiveFile));
 		fseek(archiveFile, -sizeof(fileHeader), SEEK_CUR);
+
+
+		printf("writing at %d\n", ftell(archiveFile));
 		fwrite(&header, sizeof(fileHeader), 1, archiveFile);
+		printf("end at %d\n", ftell(archiveFile));
 	}
 
 	size_t newFilesDataOffset = dataOffset;
