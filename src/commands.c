@@ -94,11 +94,9 @@ int commandAdd(programOptions po)
 		if(programOptionsGetVerbose(po))
 			printf("Adding file %s to archive %s\n", file, archiveFilename);
 
-		printf("coucou1");
 		// Get file data
 		struct stat myStat;
 		stat(file, &myStat);
-		printf("coucou2");
 
 		// Create header and fill it with data
 		fileHeader header;
@@ -175,6 +173,10 @@ int commandDelete(programOptions po)
 
 	for(int i = 0; i < oldFilesCount; i++)
 	{
+		// Verbose Log
+		if(programOptionsGetVerbose(po))
+			printf("Deleting file %s to archive %s\n", oldFiles[i], archiveFilename);
+
 		for(int j = 0; j < fileCount; j++)
 		{
 			size_t headerPos = ftell(archiveFile);
