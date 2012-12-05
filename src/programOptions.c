@@ -4,13 +4,13 @@
 
 struct programOptions
 {
-	int verbose;
-	int mode;
+	unsigned int mode;
 	char* archiveFilename;
 	char** filesNames;
-	int filesCount;
-	int gzip;
-	int sparse;
+	unsigned int filesCount;
+	unsigned int verbose;
+	unsigned int gzip;
+	unsigned int sparse;
 };
 
 programOptions programOptionsCreate()
@@ -33,12 +33,12 @@ void programOptionsDestroy(programOptions po)
 	free(po);
 }
 
-int programOptionsGetMode(programOptions po)
+unsigned int programOptionsGetMode(programOptions po)
 {
 	return po->mode;
 }
 
-void programOptionsSetMode(programOptions po, int mode)
+void programOptionsSetMode(programOptions po, unsigned int mode)
 {
 	po->mode = mode;
 }
@@ -77,22 +77,27 @@ char** programOptionsGetFilesName(programOptions po)
 	return po->filesNames;
 }
 
-int programOptionsGetFilesCount(programOptions po)
+unsigned int programOptionsGetFilesCount(programOptions po)
 {
 	return po->filesCount;
 }
 
-void programOptionsSetVerbose(programOptions po, int verbose)
+unsigned int programOptionsGetVerbose(programOptions po)
+{
+	return po->verbose;
+}
+
+void programOptionsSetVerbose(programOptions po, unsigned int verbose)
 {
 	po->verbose = verbose;
 }
 
-void programOptionsSetGZip(programOptions po, int gzip)
+void programOptionsSetGZip(programOptions po, unsigned int gzip)
 {
 	po->gzip = gzip;
 }
 
-void programOptionsSetSparse(programOptions po, int sparse)
+void programOptionsSetSparse(programOptions po, unsigned int sparse)
 {
 	po->sparse = sparse;
 }

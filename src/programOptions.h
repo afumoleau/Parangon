@@ -17,9 +17,9 @@ programOptions programOptionsCreate();
 
 void programOptionsDestroy(programOptions po);
 
-int programOptionsGetMode(programOptions po);
+unsigned int programOptionsGetMode(programOptions po);
 
-void programOptionsSetMode(programOptions po, int mode);
+void programOptionsSetMode(programOptions po, unsigned int mode);
 
 void programOptionsAddFile(programOptions po, char* filename);
 
@@ -29,13 +29,15 @@ char* programOptionsGetArchiveName(programOptions po);
 
 char** programOptionsGetFilesName(programOptions po);
 
-int programOptionsGetFilesCount(programOptions po);
+unsigned int programOptionsGetFilesCount(programOptions po);
 
-void programOptionsSetVerbose(programOptions po, int verbose);
+unsigned int programOptionsGetVerbose(programOptions po);
 
-void programOptionsSetGZip(programOptions po, int gzip);
+void programOptionsSetVerbose(programOptions po, unsigned int verbose);
 
-void programOptionsSetSparse(programOptions po, int sparse);
+void programOptionsSetGZip(programOptions po, unsigned int gzip);
+
+void programOptionsSetSparse(programOptions po, unsigned int sparse);
 
 void multipleCommandError();
 
