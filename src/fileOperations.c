@@ -7,31 +7,40 @@ void shiftData(FILE* file, off_t src, off_t dst)
 	if(dst > src)
 	{
 		// Shift right
-		char* buffer[SHIFTBUFFERSIZE];
 
-		// Compute shift offset and file size
 		size_t shiftOffset = dst-src;
 		fseek(file, 0, SEEK_END);
 		size_t fileSize = ftell(file);
-		fseek(file, shiftOffset, SEEK_CUR);
 
-		// Start one buffer before the end of the file
-		size_t readSize = SHIFTBUFFERSIZE < src ? SHIFTBUFFERSIZE : src;
-		size_t readOffset = fileSize - readSize;
-		while(readOffset >= src)
+		for(int i = fileSize-1; i >= src; --i)
 		{
-			readSize = SHIFTBUFFERSIZE < readOffset-src ? SHIFTBUFFERSIZE : readOffset-src;
-			fseek(file, readOffset, SEEK_SET);
-			fread(&buffer, readSize, 1, file);
-			fseek(file, readOffset + shiftOffset, SEEK_SET);
-			fwrite(&buffer, readSize, 1, file);
-
-			// Go one buffer to the left
-			readOffset -= src;
+			char tmp;
+			fseek(file, i, SEEK_SET);
+			fread(&tmp, sizeof(char), 1, file);
+			fseek(file, i+shiftOffset, SEEK_SET);
+			fwrite(&tmp, sizeof(char), 1, file);
+			tmp = 0;
+			fseek(file, i, SEEK_SET);
+			fwrite(&tmp, sizeof(char), 1, file);
 		}
 	}
 	else
 	{
-		//TODO Shift left
+		// Shift left
+		size_t shiftOffset = dst-src;
+		fseek(file, 0, SEEK_END);
+		size_t fileSize = ftell(file);
+
+		for(int i = src; i < fileSize; ++i)
+		{
+			char tmp;
+			fseek(file, i, SEEK_SET);
+			fread(&tmp, sizeof(char), 1, file);
+			fseek(file, i+shiftOffset, SEEK_SET);
+			fwrite(&tmp, sizeof(char), 1, file);
+			tmp = 0;
+			fseek(file, i, SEEK_SET);
+			fwrite(&tmp, sizeof(char), 1, file);
+		}
 	}
 }
