@@ -198,27 +198,30 @@ int commandDelete(programOptions po)
 			fread(&header, sizeof(fileHeader), 1, archiveFile);
 
 			if(strcmp(header.name,oldFiles[i]) == 0)
-			{
+			{ 
 				size_t dataOffset = header.data;
 				size_t dataSize = header.size;
 
-				// Shift data to erase the file and its header
-				shiftData(archiveFile, dataOffset + dataSize, dataOffset);
-				shiftData(archiveFile, ftell(archiveFile), headerPos);
-				fseek(archiveFile, headerPos, SEEK_SET);
+				fseek(archiveFile, sizeof(unsigned int), SEEK_SET);
 
 				// Update data offset for each header
 				fileHeader header;
-				for(int k = j+1; k < fileCount; k++)
+				for(int k = 0; k < fileCount; k++)
 				{
-					fread(&header, sizeof(fileHeader), 1, archiveFile);
-					header.data -= dataSize ;
-					fseek(archiveFile, -sizeof(fileHeader), SEEK_CUR);
-					fwrite(&header, sizeof(fileHeader), 1, archiveFile);
+				  fread(&header, sizeof(fileHeader), 1, archiveFile);
+				  header.data -= sizeof(fileHeader) ;
+				  if(k>j)
+				    header.data -= dataSize ;
+				  fseek(archiveFile, -sizeof(fileHeader), SEEK_CUR);
+				  fwrite(&header, sizeof(fileHeader), 1, archiveFile);
 				}
 
+				// Shift data to erase the file and its header
+				shiftData(archiveFile, dataOffset + dataSize, dataOffset);
+				shiftData(archiveFile, headerPos + sizeof(fileHeader), headerPos);
 
 				totalFileCount--;
+				fseek(archiveFile,headerPos,SEEK_SET);
 				break ;
 			}
 		}
@@ -292,8 +295,10 @@ int commandExtract(programOptions po)
 
 				//TO DO change date of last modification.
 
-				fclose(newFile);
+				printf("%d\n",header.data);
 
+				fclose(newFile);
+				fseek(archiveFile,sizeof(unsigned int),SEEK_SET);
 				break ;
 			}
 		}
@@ -311,6 +316,8 @@ int commandUpdate(programOptions po)
 
 int commandCreate(programOptions po)
 {
+
+  printf("size of header %d %d %d",sizeof(fileHeader),sizeof(fileHeader) * 3, sizeof(unsigned int));
 	// Open archive file
 	char* archiveFilename = programOptionsGetArchiveName(po);
 	FILE* archiveFile = fopen(archiveFilename, "w");
@@ -344,6 +351,7 @@ int commandCreate(programOptions po)
 		header.owner = myStat.st_uid;
 		header.size = myStat.st_size;
 		header.data = dataOffset;
+		printf("%s %d\n",header.name , header.data);
 		header.mtime = myStat.st_mtime;
 
 		// Write header
