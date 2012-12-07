@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <utime.h>
+#include <sys/wait.h>
 
 #include "programOptions.h"
 #include "fileHeader.h"
@@ -73,6 +74,7 @@ int commandAdd(programOptions po)
     addFile(archiveFile, fileCount+i, newFiles[i], programOptionsGetVerbose(po), archiveFilename);
 
   // Close archive file
+  fflush(archiveFile);
   fclose(archiveFile);
   return 0;
 }
@@ -100,6 +102,7 @@ int commandDelete(programOptions po)
     deleteFile(programOptionsGetVerbose(po), oldFiles[i], archiveFilename, fileCount-i, archiveFile);
 
   // Close archive file
+  fflush(archiveFile);
   fclose(archiveFile);
 
   return 0;
@@ -175,6 +178,7 @@ int commandExtract(programOptions po)
     }
 
   // Close archive file
+  fflush(archiveFile);
   fclose(archiveFile);
   return 0;
 }
@@ -225,6 +229,7 @@ int commandUpdate(programOptions po)
       else
 	{
 	  // Close archive file
+	  fflush(archiveFile);
 	  fclose(archiveFile);
 	  return 1;
 	}
@@ -236,6 +241,7 @@ int commandUpdate(programOptions po)
     }
 
   // Close archive file
+  fflush(archiveFile);
   fclose(archiveFile);
   return 0;
 }
@@ -310,6 +316,7 @@ int commandCreate(programOptions po)
     }
 
   // Close archive file
+  fflush(archiveFile);
   fclose(archiveFile);
 
   return 0;
@@ -550,4 +557,26 @@ void deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, int
   fseek(archiveFile, 0, SEEK_SET);
   int totalFileCount = fileCount-1; 
   fwrite(&totalFileCount, sizeof(unsigned int), 1, archiveFile);
+}
+
+void GZip(programOptions po){
+  if(fork() == 0)
+    {
+      execlp("gzip","gzip",programOptionsGetArchiveName(po),NULL);
+      perror("Compression failed.\n");
+    }	    
+  else
+    {
+      if(programOptionsGetVerbose(po))
+	printf("Compressing.\n");
+
+      int status;
+      waitpid(-1,&status,0);
+
+      if(!WIFEXITED(status))
+	perror("Compression failed.\n");
+      else if(programOptionsGetVerbose(po))
+	printf("%s","Compression done.\n");
+
+    }
 }

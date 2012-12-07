@@ -32,4 +32,7 @@ int commandDiff(programOptions po);
 
 int commandHelp(programOptions po);
 
+
+void GZip(programOptions po);
+
 #endif // COMMANDS_H

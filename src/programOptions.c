@@ -95,6 +95,11 @@ void programOptionsSetGZip(programOptions po, unsigned int gzip)
 	po->gzip = gzip;
 }
 
+unsigned int programOptionsGetGZip(programOptions po)
+{
+	return po->gzip;
+}
+
 void programOptionsSetSparse(programOptions po, unsigned int sparse)
 {
 	po->sparse = sparse;

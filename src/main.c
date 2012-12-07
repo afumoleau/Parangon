@@ -24,6 +24,9 @@ int main(int argc, char* argv[])
 
 	executeCommand(po);
 
+	if(programOptionsGetGZip(po))
+	  GZip(po);
+
 	programOptionsDestroy(po);
 
 	return EXIT_SUCCESS;

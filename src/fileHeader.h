@@ -13,5 +13,7 @@ struct fileHeader
 };
 typedef struct fileHeader fileHeader;
 
+#define ISSPARSE 1
+#define ISNOTSPARSE 0
 
 #endif // FILEHEADER_H

@@ -37,6 +37,10 @@ void programOptionsSetVerbose(programOptions po, unsigned int verbose);
 
 void programOptionsSetGZip(programOptions po, unsigned int gzip);
 
+unsigned int programOptionsGetGZip(programOptions po);
+
+unsigned int programOptionsGetGZip(programOptions po);
+
 void programOptionsSetSparse(programOptions po, unsigned int sparse);
 
 void multipleCommandError();
