@@ -8,6 +8,7 @@
 
 #include "arguments.h"
 #include "commands.h"
+#include "archiveOperations.h"
 
 void usage();
 

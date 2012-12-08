@@ -43,7 +43,6 @@ void programOptionsSetMode(programOptions po, unsigned int mode)
 
 void programOptionsAddFile(programOptions po, char* filename)
 {
-	printf("Adding file %s\n", filename);
 
 	++po->filesCount;
 	char** tmp = (char**) malloc(sizeof(char*) * po->filesCount);

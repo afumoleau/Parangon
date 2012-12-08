@@ -8,7 +8,7 @@ LDFLAGS=
 
 all: $(EXEC)
 
-par: par.o arguments.o fileOperations.o programOptions.o commands.o
+par: par.o arguments.o fileOperations.o programOptions.o commands.o archiveOperations.o
 	$(CC) $^ $(LDFLAGS) -o $(EXEC)
 
 arguments.o: arguments.c arguments.h
@@ -25,6 +25,9 @@ par.o: main.c arguments.h commands.h
 
 commands.o: commands.c commands.h programOptions.h fileHeader.h fileOperations.h
 	$(CC) -c $(CFLAGS) commands.c -o commands.o
+
+archiveOperations.o : archiveOperations.c archiveOperations.h fileOperations.h fileHeader.h
+	$(CC) -c $(CFLAGS) archiveOperations.c -o archiveOperations.o
 
 clean:
 	@rm *.o

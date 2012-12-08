@@ -1,4 +1,4 @@
-#ifndef FILEHEADER_H
+ #ifndef FILEHEADER_H
 #define FILEHEADER_H
 
 struct fileHeader

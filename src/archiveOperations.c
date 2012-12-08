@@ -15,7 +15,7 @@
 
 #define COPYBUFFERSIZE 1024
 
-void addFile(FILE* archiveFile, char* newFile, unsigned int verbose, char* archiveFilename){
+int addFile(FILE* archiveFile, char* newFile, unsigned int verbose, char* archiveFilename){
 
   fseek(archiveFile,0,SEEK_SET);
 
@@ -33,14 +33,21 @@ void addFile(FILE* archiveFile, char* newFile, unsigned int verbose, char* archi
     {
       fileHeader header;
       if(fread(&header, sizeof(fileHeader), 1, archiveFile) <= 0)
-	fprintf(stderr, "Error reading");
+	{
+	  fprintf(stderr, "Error reading\n");
+	  return 1;
+	}
 
       header.data = dataOffset;
       dataOffset += header.size;
 
       fseek(archiveFile, -sizeof(fileHeader), SEEK_CUR);
 
-      fwrite(&header, sizeof(fileHeader), 1, archiveFile);
+       if(fwrite(&header, sizeof(fileHeader), 1, archiveFile)<= 0)
+	 {
+	   fprintf(stderr, "Error writing\n");
+	   return 1;
+	 }
     }
 
   size_t newFilesDataOffset = dataOffset;
@@ -66,7 +73,11 @@ void addFile(FILE* archiveFile, char* newFile, unsigned int verbose, char* archi
   header.mtime = myStat.st_mtime;
 
   // Write header
-  fwrite(&header, sizeof(fileHeader), 1, archiveFile);
+  if(fwrite(&header, sizeof(fileHeader), 1, archiveFile) <= 0)
+    {
+      fprintf(stderr, "Error writing\n");
+      return 1;
+    }
 
   // Add file size to the data offset
   dataOffset += header.size;
@@ -87,8 +98,16 @@ void addFile(FILE* archiveFile, char* newFile, unsigned int verbose, char* archi
   while(leftToRead > 0)
     {
       unsigned int readSize = leftToRead < COPYBUFFERSIZE ? leftToRead : COPYBUFFERSIZE;
-      fread(&copyBuffer, readSize, 1, file);
-      fwrite(&copyBuffer, readSize, 1, archiveFile);
+      if(fread(&copyBuffer, readSize, 1, file) <= 0)
+	{
+	  fprintf(stderr, "Error reading\n");
+	  return 1;
+	}
+      if(fwrite(&copyBuffer, readSize, 1, archiveFile) <= 0)
+	{
+	  fprintf(stderr, "Error writing\n");
+	  return 1;
+	}
       leftToRead -= readSize;
     }
 
@@ -98,15 +117,26 @@ void addFile(FILE* archiveFile, char* newFile, unsigned int verbose, char* archi
   // Update file count
   fseek(archiveFile, 0, SEEK_SET);
   unsigned int totalFileCount = fileCount + 1;
-  fwrite(&totalFileCount, sizeof(unsigned int), 1, archiveFile);
+  if(fwrite(&totalFileCount, sizeof(unsigned int), 1, archiveFile) <= 0)
+    {
+      fprintf(stderr, "Error writing\n");
+      return 1;
+    }
+
+  return 0;
+
 }
 
-void deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, FILE* archiveFile){
+int deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, FILE* archiveFile){
 
   fseek(archiveFile,0,SEEK_SET);
 
   unsigned int fileCount = 0;
-  fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+  if(fread(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0)
+    {
+      fprintf(stderr, "Error reading\n");
+      return 1;
+    }
 
 
   // Verbose Log
@@ -117,7 +147,13 @@ void deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, FIL
     {
       size_t headerPos = ftell(archiveFile);
       fileHeader header ;
-      fread(&header, sizeof(fileHeader), 1, archiveFile);
+      
+      if(fread(&header, sizeof(fileHeader), 1, archiveFile) <=0 )
+	{
+	  fprintf(stderr, "Error reading\n");
+	  return 1;
+	}
+
       if(strcmp(header.name,oldFiles) == 0)
 	{ 
 	  size_t dataOffset = header.data;
@@ -129,12 +165,22 @@ void deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, FIL
 	  fileHeader header;
 	  for(int k = 0; k < fileCount; k++)
 	    {
-	      fread(&header, sizeof(fileHeader), 1, archiveFile);
+	      if( fread(&header, sizeof(fileHeader), 1, archiveFile) <= 0)
+		{
+		  fprintf(stderr, "Error reading\n");
+		  return 1;
+		}
+
 	      header.data -= sizeof(fileHeader) ;
 	      if(k>j)
 		header.data -= dataSize ;
 	      fseek(archiveFile, -sizeof(fileHeader), SEEK_CUR);
-	      fwrite(&header, sizeof(fileHeader), 1, archiveFile);
+
+	      if( fwrite(&header, sizeof(fileHeader), 1, archiveFile) <= 0)
+		{
+		  fprintf(stderr, "Error writing\n");
+		  return 1;
+		}
 	    }
 
 	  // Shift data to erase the file and its header
@@ -149,14 +195,21 @@ void deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, FIL
   // Update file count
   fseek(archiveFile, 0, SEEK_SET);
   int totalFileCount = fileCount-1; 
-  fwrite(&totalFileCount, sizeof(unsigned int), 1, archiveFile);
+  if( fwrite(&totalFileCount, sizeof(unsigned int), 1, archiveFile) <= 0 )
+    {
+      fprintf(stderr, "Error writing\n");
+      return 1;
+    }
+
+  return 0;
 }
 
-void GZip(programOptions po){
+int GZip(programOptions po){
   if(fork() == 0)
     {
       execlp("gzip","gzip",programOptionsGetArchiveName(po),NULL);
       perror("Compression failed.\n");
+      return 1;
     }	    
   else
     {
@@ -167,24 +220,38 @@ void GZip(programOptions po){
       waitpid(-1,&status,0);
 
       if(!WIFEXITED(status))
-	perror("Compression failed.\n");
+	{
+	  perror("Compression failed.\n");
+	  return 1;
+	}
       else if(programOptionsGetVerbose(po))
 	printf("%s","Compression done.\n");
-
     }
+
+  return 0;
 }
 
-void extractFile(FILE* archiveFile, char* extractFile, char* newName){
+int extractFile(FILE* archiveFile, char* extractFile, char* newName){
 
   fseek(archiveFile,0,SEEK_SET);
 
   unsigned int fileCount = 0;
-  fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+  if( fread(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0)
+    {
+      fprintf(stderr, "Error reading\n");
+      return 1;
+    }
 
   for(int j = 0; j < fileCount; j++)
     {
       fileHeader header ;
-      fread(&header, sizeof(fileHeader), 1, archiveFile);
+
+      if( fread(&header, sizeof(fileHeader), 1, archiveFile) <= 0)
+	{
+	  fprintf(stderr, "Error reading\n");
+	  return 1;
+	}
+
       size_t headerPos = ftell(archiveFile);
 
       if(strcmp(header.name,extractFile) == 0)
@@ -194,7 +261,13 @@ void extractFile(FILE* archiveFile, char* extractFile, char* newName){
 	  char buffer[dataSize];
 
 	  fseek(archiveFile, dataOffset, SEEK_SET);
-	  fread(&buffer,dataSize,1,archiveFile);
+
+	  if( fread(&buffer,dataSize,1,archiveFile) <= 0)
+	    {
+	      fprintf(stderr, "Error reading\n");
+	      return 1;
+	    }
+
 	  fseek(archiveFile, headerPos, SEEK_SET);
 
 	  int svguid = geteuid() ;
@@ -205,7 +278,13 @@ void extractFile(FILE* archiveFile, char* extractFile, char* newName){
 
 	  FILE* newFile = fopen(newName, "w+");
 	  fseek(newFile,0,SEEK_SET);
-	  fwrite(&buffer,dataSize,1,newFile);
+
+	  if( fwrite(&buffer,dataSize,1,newFile) <= 0)
+	    {
+	      fprintf(stderr, "Error writing\n");
+	      return 1;
+	    }
+
 	  chmod(header.name, header.mode);
 
 	  seteuid(svguid);
@@ -223,13 +302,18 @@ void extractFile(FILE* archiveFile, char* extractFile, char* newName){
 	  break ;
 	}
     }
+  return 0;
 }
 
 int difference(FILE* archiveFile){
 
   // Read file count
   unsigned int fileCount = 0;
-  fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+  if( fread(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0 )
+    {
+      fprintf(stderr, "Error writing\n");
+      return 1;
+    }
 
   fileHeader header;
   for(int i = 0; i < fileCount; ++i)
