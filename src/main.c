@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
 
 void usage()
 {
-	printf("Usage : par\n");
+	printf("Usage: par <operation> [options]\n");
+	printf("For more help, type : par -h \n");
 	exit(EXIT_FAILURE);
 }
