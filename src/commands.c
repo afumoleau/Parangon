@@ -68,7 +68,11 @@ int commandAdd(programOptions po)
   unsigned int newFilesCount = programOptionsGetFilesCount(po);
 
   for(int i = 0; i < newFilesCount; i++)
-    addFile(archiveFile, newFiles[i], programOptionsGetVerbose(po), archiveFilename);
+    if( addFile(archiveFile, newFiles[i], programOptionsGetVerbose(po), archiveFilename) != 0 )
+      {
+	fprintf(stderr,"Error adding %s.\n", newFiles[i]);
+	return 1;
+      }
 
   // Close archive file
   fflush(archiveFile);
@@ -93,10 +97,19 @@ int commandDelete(programOptions po)
   char** oldFiles = programOptionsGetFilesName(po);
   unsigned int oldFilesCount = programOptionsGetFilesCount(po);
   unsigned int fileCount = 0;
-  fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+  if(fread(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0)
+    {
+      printf("Error reading\n");
+      return 1;
+    }
 
   for(int i = 0; i < oldFilesCount; i++)
-    deleteFile(programOptionsGetVerbose(po), oldFiles[i], archiveFilename, archiveFile);
+    if( deleteFile(programOptionsGetVerbose(po), oldFiles[i], archiveFilename, archiveFile) != 0 )
+      {
+	fprintf(stderr,"Error deleting %s", oldFiles[i]);
+	return 1;
+      }
 
   // Close archive file
   fflush(archiveFile);
@@ -127,7 +140,11 @@ int commandExtract(programOptions po)
       // Verbose Log
       if(programOptionsGetVerbose(po))
 	printf("Extracting file %s to archive %s\n", extractFiles[i], archiveFilename);
-      extractFile(archiveFile, extractFiles[i], extractFiles[i]);
+      if( extractFile(archiveFile, extractFiles[i], extractFiles[i]) != 0 )
+	{
+	  fprintf(stderr,"Error extracting %s.\n", extractFiles[i]);
+	  return 1 ;
+	}
     }
 
   // Close archive file
@@ -155,7 +172,12 @@ int commandUpdate(programOptions po)
 
   // Read file count
   unsigned int fileCount = 0;
-  fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+
+  if( fread(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0 )
+    {
+      printf("Error reading.\n");
+      return 1;
+    }
 
   char** changedFiles;
   changedFiles = (char**) malloc(sizeof(char*)*fileCount);
@@ -189,8 +211,12 @@ int commandUpdate(programOptions po)
     }
   for(int i = 0; i < cpt; i++)
     {
-      deleteFile(1,changedFiles[i],archiveFilename,archiveFile);
-      addFile(archiveFile, changedFiles[i], 1, archiveFilename);
+      if( ( deleteFile(1,changedFiles[i],archiveFilename,archiveFile) <= 0 ) || 
+	  ( addFile(archiveFile, changedFiles[i], 1, archiveFilename) <= 0 ) )
+	{
+	  fprintf(stderr,"Error updating %s", changedFiles[i]) ;
+	  return 1;
+	}
     }
 
   // Close archive file
@@ -211,14 +237,22 @@ int commandCreate(programOptions po)
 
   // Write file count
   unsigned int fileCount = 0;
-  fwrite(&fileCount, sizeof(unsigned int), 1, archiveFile);
+  if( fwrite(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0)
+    {
+      perror("Error writing.\n");
+      return 1;
+    }
 
   // Get files to add to the archive
   char** files = programOptionsGetFilesName(po);
   fileCount = programOptionsGetFilesCount(po);
 
   for(int i = 0; i < fileCount; i++)
-    addFile(archiveFile, files[i], programOptionsGetVerbose(po), archiveFilename);
+    if( addFile(archiveFile, files[i], programOptionsGetVerbose(po), archiveFilename) != 0 )
+      {
+	fprintf(stderr,"Error adding %s to %s.\n", files[i], archiveFilename);
+	return 1;
+      }
 
   // Close archive file
   fflush(archiveFile);
@@ -246,7 +280,11 @@ int commandList(programOptions po)
 
   // Read file count
   unsigned int fileCount = 0;
-  fread(&fileCount, sizeof(unsigned int), 1, archiveFile);
+  if( fread(&fileCount, sizeof(unsigned int), 1, archiveFile) <= 0)
+    {
+      perror("Error reading.\n");
+      return 1;
+    }
 
   // Read headers
   fileHeader header;

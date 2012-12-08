@@ -324,14 +324,17 @@ int difference(FILE* archiveFile){
 	{
 	  struct stat buf ;
 	  stat(header.name,&buf);
-	  time_t mtime = buf.st_mtime;
-	  if(header.mtime != mtime)
+	  		  
+	  struct utimbuf time;
+	  time.actime = buf.st_atime;
+	  time.modtime = buf.st_mtime;
+	  if(header.mtime != buf.st_mtime) // show difference only if the last modification time are different
 	    {
 	      printf("%s is different on the disk :\n", header.name);
-	      extractFile(archiveFile, header.name, "tmpDiff");
+	      extractFile(archiveFile, header.name, "/tmp/tmpDiff");
 	      if( fork()==0 )
 		{
-		  execlp("diff","diff","tmpDiff",header.name,NULL);
+		  execlp("diff","diff","/tmp/tmpDiff",header.name,NULL);
 		  printf("An error occured during diff.\n");
 		}
 	      else 
@@ -340,15 +343,10 @@ int difference(FILE* archiveFile){
 		  waitpid(-1,&status,0);
 		  if(!WIFEXITED(status))
 		    perror("Difference failed.\n");
-		  
-		  struct utimbuf time;
-		  time.actime = mtime;
-		  time.modtime = mtime;
-		  utime(header.name, &time);
 
 		  if( fork() == 0 )
 		    {
-		       execlp("rm","rm","tmpDiff",NULL);
+		       execlp("rm","rm","/tmp/tmpDiff",NULL);
 		       return 1;
 		    }
 		  else 
@@ -357,11 +355,8 @@ int difference(FILE* archiveFile){
 		      waitpid(-1,&status,0);
 		      if(!WIFEXITED(status))
 			perror("Difference failed.\n");
-		  
-		      struct utimbuf time;
-		      time.actime = mtime;
-		      time.modtime = mtime;
-		      utime(header.name, &time);
+
+		      utime(header.name, &time);// restore the last access time
 		    }
 
 		  fseek(archiveFile, headerPos, SEEK_SET);
