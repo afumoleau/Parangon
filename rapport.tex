@@ -1,0 +1,80 @@
+\documentclass{article}
+
+\usepackage{fontenc} 
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage{url}
+\usepackage{graphicx}
+
+\title{Rapport Projet}
+\author{Jéremy Turon, Alix Fumoleau, et, Jean Batista}
+
+\begin{document}
+\maketitle
+
+ \tableofcontents
+
+\newpage
+
+
+\section{Objectif}
+\label{objectif}
+\subsection{Initial}
+
+Les objectifs de ce projet étant très détaillés dans le sujet, nous avions simplement pour objectif de faire un programme facilement extensible pour permettre des améliorations une fois les objectifs obligatoire remplis.
+
+\subsection{Réalisé}
+
+Dans notre projets nous avons utilisé \textbf{CMake} comme système de compilation (pour son coté pratique une fois mis en place). Pour le débugage et les erreurs de segmentations nous avons utilisé Valgrind et GDB.
+\\ Notre projet est aussi utilisable sous Mac OS par le biais de X11.
+\\ La documentations detaillé du logiciel est disponible sur:  \\ \url{http://jeremy.turon.emi.u-bordeaux1.fr}.
+\\ \textbf{Les poissons} sont attirés par la nourriture si ils ne mangent pas ils finissent par mourir, et à l'inverse si les poissons mangent assez de nourriture ils se reproduisent. 
+De plus les poissons évitent les prédateurs, les collisions avec leurs congénères et avec les obstacles.
+\\Quand deux poissons se voient ils forment un banc et s'alignent sur la vitesse du chef. Et quand deux chefs se voient, leurs bancs fusionnent.
+\\ \textbf{ Les obstacles} sont placés aléatoirement sur le terrain à l'initialisation. 
+\\ \textbf{La nourriture} apparaît aléatoirement sur le terrain à intervalles réguliers.
+\\L'utilisateur peut interagir avec le programme, quand il fait un clique gauche un poison est crée à la position du curseur, et un clique droit crée un prédateur.
+
+\subsection{Amélioration}
+Nous aurions bien voulu implémenter un mode 3D en plus du mode 2D (avec la possibilité de changer entre les deux modes) mais cela s'est avéré plus complexe que nous le pensions au départ et faute de temps l'option n'a pas pu être menée à son terme.
+\\Nous aurions voulu approfondir l'optimisation du code, car des appels de fonctions pourraient sûrement être évités. Comme la fonction qui calcule la distance entre deux positions qui représente $\approx$15-20\% des appels selon \textbf{gprof}. Ainsi qu'augmenter la factorisation de code.
+\\ Il aurai été bien de rendre le projet muti-platforme (a ce jour il manque Windows). mais  Glut n'est pas installer sur Windows et mettre Glut en bibliothèque tierce c'est avéré  compliqué (bibliothèque différente pur chaque version de Windows ...).
+
+
+\section{Déroulement Du Projet}
+\label{deroulementduprojet}
+\subsection{Affichage}
+Au départ, nous pensions utiliser la \textbf{SDL} pour afficher des poissons de profil et se déplaçant horizontalement. Mais cette représentation était très limitée aux niveau des interactions entre les poissons et leur nombre.
+Poussé par notre enseignant de td nous avons décidé de changer de bibliothèque graphique, passant de la \textbf{SDL} à \textbf{glut}. \textbf{Glut} étant beaucoup  plus complète et permettant d'envisager l'adaptation du projet en 3D.
+
+\subsection{Utilitaire et Modules de Base}
+Dans cette optique nous avons implémenté les modules de notre programme pour permettre facilement le passage à la 3D. 
+Nous avons défini une \textbf{structure position} qui est utilisée par tous les autres modules. Dans un même temps nous avons implémenté les modules de base; \textbf{poisson}, \textbf{terrain} et \textbf{prédateur}.
+\subsection{Modules plus complexes}
+Sur ces bases nous avons implémenté les modules plus complexes, le \textbf{mouvement} dans un premier temps puis la \textbf{vision}, les \textbf{interactions} et les \textbf{bancs}. Pour ce derniers nous avons réfléchi pour éviter d’implémenter une \textbf{structure banc}. Après de multiples tests nous nous sommes aperçu que la gestion des bancs dans une structure était très coûteuse en mémoire et en gestion que ce soit avec un tableau deux dimensions, une liste doublement chaînée ou un arbre binaire. Nous avons donc opté pour une solution plus économe un gérant les bancs directement dans les interactions.
+
+
+\subsection{Organisation du Travail}
+~~\vspace{0mm}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\setlength{\tabcolsep}{10mm}
+   \begin{tabular} {| c | c  | }
+     \hline
+     
+     \textbf{Personne} & \textbf{Tâche} \\ \hline
+     Jéremy Turon & module Affichage    \\ \hline
+     Jéremy Turon & module Interaction\\ \hline
+     Pierre Mahé & module Mouvement\\ \hline
+     Pierre Mahé & module Poisson\\ \hline
+     Pierre Mahé & module Position2D\\ \hline
+     Jéremy Turon & module Prédateur\\ \hline
+     Pierre Mahé & module Terrain\\ \hline
+     Jéremy Turon & module Vision\\ \hline
+     Pierre Mahé & Rapport\\
+     \hline
+   \end{tabular}
+ \end{center}
+
+ 
+\end{document}
