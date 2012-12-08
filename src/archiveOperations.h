@@ -3,15 +3,9 @@
 
 #include "programOptions.h"
 
-int addFile(FILE* archiveFile, 
-	     char* newFiles, 
-	     unsigned int verbose, 
-	     char* archiveFileName) ;
+int addFile(FILE* archiveFile, char* newFiles, unsigned int verbose, char* archiveFileName);
 
-int deleteFile(unsigned int verbose, 
-		char* oldFiles, 
-		char* archiveFilename, 
-		FILE* archiveFile);
+int deleteFile(unsigned int verbose, char* oldFiles, char* archiveFilename, FILE* archiveFile);
 
 int extractFile(FILE* archiveFile, char* extractFile, char* newName);
 

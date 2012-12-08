@@ -47,9 +47,9 @@ void programOptionsAddFile(programOptions po, char* filename)
 	++po->filesCount;
 	char** tmp = (char**) malloc(sizeof(char*) * po->filesCount);
 
-	for(int i = 0; i < po->filesCount-1; ++i)
+	for (int i = 0; i < po->filesCount - 1; ++i)
 		tmp[i] = po->filesNames[i];
-	tmp[po->filesCount-1] = filename;
+	tmp[po->filesCount - 1] = filename;
 
 	po->filesNames = tmp;
 }
@@ -61,9 +61,9 @@ void programOptionsSetArchiveName(programOptions po, char* archiveName)
 
 char* programOptionsGetArchiveName(programOptions po)
 {
-	if(po->archiveFilename == NULL)
+	if (po->archiveFilename == NULL)
 	{
-		po->archiveFilename = (char*) malloc(100*sizeof(char));
+		po->archiveFilename = (char*) malloc(100 * sizeof(char));
 		scanf("%s", po->archiveFilename);
 	}
 	return po->archiveFilename;

@@ -22,7 +22,7 @@ int readArgument(int argc, char* argv[], programOptions po)
 			switch (option)
 			{
 			case 'h':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_HELP);
 				break;
@@ -32,31 +32,31 @@ int readArgument(int argc, char* argv[], programOptions po)
 				break;
 
 			case 'c':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_CREATE);
 				break;
 
 			case 't':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_LIST);
 				break;
 
 			case 'r':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_ADD);
 				break;
 
 			case 'u':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_UPDATE);
 				break;
 
 			case 'x':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_EXTRACT);
 				break;
@@ -70,13 +70,13 @@ int readArgument(int argc, char* argv[], programOptions po)
 				break;
 
 			case 'd':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_DELETE);
 				break;
 
 			case 'm':
-				if(programOptionsGetMode(po) != MODE_NONE)
+				if (programOptionsGetMode(po) != MODE_NONE)
 					multipleCommandError();
 				programOptionsSetMode(po, MODE_DIFF);
 				break;
