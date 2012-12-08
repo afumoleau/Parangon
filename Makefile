@@ -49,7 +49,7 @@ endif
 #
 # Main build targets
 #
-executable : $(BINDIR)/$(EXECUTABLE)
+executable : $(BINDIR) $(BINDIR)/$(EXECUTABLE)
 
 $(BINDIR)/$(EXECUTABLE) : $(OBJS)
 	$(CC) $(LDFLAGS) $(patsubst %,$(OBJDIR)/%,$^) $(LDLIBS) -o $@
