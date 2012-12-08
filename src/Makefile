@@ -7,9 +7,9 @@ EXEC = par
 LDFLAGS=
 
 all: $(EXEC)
- 
+
 par: par.o arguments.o fileOperations.o programOptions.o commands.o
-  $(CC) $^ $(LDFLAGS) -o $(EXEC)
+	$(CC) $^ $(LDFLAGS) -o $(EXEC)
 
 arguments.o: arguments.c arguments.h
 	$(CC) -c $(CFLAGS) arguments.c -o arguments.o
@@ -28,9 +28,9 @@ commands.o: commands.c commands.h programOptions.h fileHeader.h fileOperations.h
 
 clean:
 	@rm *.o
-	
+
 mrproper: clean
 	@rm $(EXEC)
-	
+
 valgrind: all
 	valgrind --leak-check=yes ./$(EXEC)
