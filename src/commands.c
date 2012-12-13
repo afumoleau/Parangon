@@ -246,7 +246,7 @@ int commandUpdate(programOptions po)
 	}
 	for (int i = 0; i < cpt; i++)
 	{
-		if ((deleteFile(1, changedFiles[i], archiveFilename, archiveFile) <= 0) || (addFile(archiveFile, changedFiles[i], 1, archiveFilename) <= 0))
+		if ((deleteFile(programOptionsGetVerbose(po), changedFiles[i], archiveFilename, archiveFile) != 0) || (addFile(archiveFile, changedFiles[i], programOptionsGetVerbose(po), archiveFilename) != 0))
 		{
 			fprintf(stderr, "Error updating %s", changedFiles[i]);
 			return 1;
