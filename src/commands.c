@@ -253,6 +253,10 @@ int commandUpdate(programOptions po)
 		}
 	}
 
+	for (int i = 0; i < fileCount; i++)
+		free(changedFiles[i]);
+	free(changedFiles);
+
 	// Close archive file
 	fflush(archiveFile);
 	fclose(archiveFile);
